@@ -11,6 +11,6 @@ namespace DeviceApi.Models
 
         public string Action { get; set; } = string.Empty;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
