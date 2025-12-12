@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DeviceApi.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace DeviceApi.Controllers
 {
@@ -14,14 +15,17 @@ namespace DeviceApi.Controllers
     {
         private readonly ContractClientDbContext _masterContext;
         private readonly ContractClientDbContextFactory _contractClientDbFactory;
+        private readonly IConfiguration _configuration;
 
         // DbContextをDIで受け取るコンストラクター
         public AuthController(
             ContractClientDbContext masterContext,
-            ContractClientDbContextFactory contractClientDbFactory)
+            ContractClientDbContextFactory contractClientDbFactory,
+            IConfiguration configuration)
         {
             _masterContext = masterContext;
             _contractClientDbFactory = contractClientDbFactory;
+            _configuration = configuration;
         }
 
         public class LoginRequest
@@ -47,10 +51,20 @@ namespace DeviceApi.Controllers
             }
             else
             {
-                // ① テナントDBの接続文字列
-                string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
-                
-                // ² factory からテナントDB用 DeviceDbContext を生成
+                // DEBUG: 入力値と masterDB から取得した契約コードを出力
+                Console.WriteLine($"[DEBUG] AuthController request.ContractClientCd: {request.ContractClientCd}");
+                Console.WriteLine($"[DEBUG] AuthController master contractClient.ContractClientCd: {contractClient.ContractClientCd}");
+
+                // ① appsettings.json から接続文字列を取得して Database 部分を置換
+                var connStringTemplate = _configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrWhiteSpace(connStringTemplate))
+                    throw new Exception("ConnectionString 'DefaultConnection' が設定されていません");
+                string connStr = DeviceApi.Data.ConnectionStringHelper.SetDatabase(connStringTemplate, contractClient.ContractClientCd);
+
+                // DEBUG: 出力して本当に接続している DB 名を確認（運用前に削除してください）
+                Console.WriteLine($"[DEBUG] AuthController constructed tenant connStr: {connStr}");
+
+                // ② factory からテナントDB用 DeviceDbContext を生成
                 var contractClientDbDb = _contractClientDbFactory.Create(connStr);
 
                 if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))

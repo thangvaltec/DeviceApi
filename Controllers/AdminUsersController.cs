@@ -7,6 +7,7 @@ using DeviceApi.Data;
 using DeviceApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace DeviceApi.Controllers
 {
@@ -16,13 +17,16 @@ namespace DeviceApi.Controllers
     {
         private readonly ContractClientDbContext _masterDb;
         private readonly ContractClientDbContextFactory _factory;
+        private readonly IConfiguration _configuration;
 
         public AdminUsersController(
             ContractClientDbContext masterDb,
-            ContractClientDbContextFactory factory)
+            ContractClientDbContextFactory factory,
+            IConfiguration configuration)
         {
             _masterDb = masterDb;
             _factory = factory;
+            _configuration = configuration;
         }
 
         // ★ マルチテナント対応：contractClientCd からテナントDB用 DeviceDbContext を取得
@@ -57,8 +61,12 @@ namespace DeviceApi.Controllers
             if (contractClient == null)
                 throw new Exception("MasterDB にテナント情報がありません");
 
-            // ⑥ テナントDB用の接続文字列
-            string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
+            // ⑥ appsettings.json から接続文字列テンプレートを取得して Database 部分を置換
+            var connStringTemplate = _configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connStringTemplate))
+                throw new Exception("ConnectionString 'DefaultConnection' が設定されていません");
+            // Use the same replacement token as other controllers (DefaultConnection contains Database=Common)
+            string connStr = DeviceApi.Data.ConnectionStringHelper.SetDatabase(connStringTemplate, contractClient.ContractClientCd);
 
             // ⑦ 動的に DeviceDbContext を生成
             return _factory.Create(connStr);
