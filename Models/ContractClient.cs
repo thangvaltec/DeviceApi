@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DeviceApi.Models
 {
-    [Table("tenants")]
-    public class Tenant
+    [Table("contract_client")]
+    public class ContractClient
     {
         [Key]
         public int Id { get; set; }     // PK
 
         [Required]
-        public string TenantCode { get; set; } = string.Empty;
+        public string ContractClientCd { get; set; } = string.Empty;
 
-        public string TenantName { get; set; } = string.Empty;
+        public string ContractClientName { get; set; } = string.Empty;
 
         // Soft delete flag: false = active, true = deleted (hidden)
         public bool DelFlg { get; set; } = false;

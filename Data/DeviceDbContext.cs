@@ -17,24 +17,7 @@ namespace DeviceApi.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Store boolean flags as 0/1 integers in the database
-            var boolToZeroOne = new BoolToZeroOneConverter<int>();
-            var activeFlagConverter = new ValueConverter<bool, int>(
-                v => v ? 0 : 1,     // active(true) -> 0, inactive(false) -> 1
-                v => v == 0         // db 0 => active(true), db 1 => inactive(false)
-            );
-
-            modelBuilder.Entity<Device>(entity =>
-            {
-                entity.ToTable("devices");
-                entity.Property(d => d.IsActive)
-                      .HasConversion(activeFlagConverter)
-                      .HasColumnType("integer");
-                entity.Property(d => d.DelFlg)
-                      .HasConversion(boolToZeroOne)
-                      .HasColumnType("integer");
-            });
-
+            modelBuilder.Entity<Device>().ToTable("devices");
             modelBuilder.Entity<DeviceLog>().ToTable("device_logs");
             modelBuilder.Entity<AdminUser>().ToTable("admin_users");
 

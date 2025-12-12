@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DeviceApi.Models
 {
+    [Table("devices")]
     public class Device
     {
         [Key]

@@ -26,13 +26,13 @@ builder.Services.AddCors(options =>
 });
 
 // DbContextの登録（PostgreSQLを使用）
-builder.Services.AddDbContext<TenantDbContext>(options =>
+builder.Services.AddDbContext<ContractClientDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
-builder.Services.AddSingleton<TenantDbContextFactory>();
+builder.Services.AddSingleton<ContractClientDbContextFactory>();
 
 var app = builder.Build();
 

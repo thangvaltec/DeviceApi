@@ -14,51 +14,51 @@ namespace DeviceApi.Controllers
     [ApiController]
     public class AdminUsersController : ControllerBase
     {
-        private readonly TenantDbContext _masterDb;
-        private readonly TenantDbContextFactory _factory;
+        private readonly ContractClientDbContext _masterDb;
+        private readonly ContractClientDbContextFactory _factory;
 
         public AdminUsersController(
-            TenantDbContext masterDb,
-            TenantDbContextFactory factory)
+            ContractClientDbContext masterDb,
+            ContractClientDbContextFactory factory)
         {
             _masterDb = masterDb;
             _factory = factory;
         }
 
-        // ★ マルチテナント対応：tenantCode からテナントDB用 DeviceDbContext を取得
-        private DeviceDbContext GetTenantDb()
+        // ★ マルチテナント対応：contractClientCd からテナントDB用 DeviceDbContext を取得
+        private DeviceDbContext GetContractClientDb()
         {
-            // ① リクエストヘッダーまたはJWTから tenantCode を取得
-            var tenantCode = User.FindFirst("tenantCode")?.Value;
+            // ① リクエストヘッダーまたはJWTから contractClientCd を取得
+            var contractClientCd = User.FindFirst("contractClientCd")?.Value;
             
             // ② ヘッダーから取得を試みる（JWT未実装時の暫定対応）
-            if (string.IsNullOrWhiteSpace(tenantCode))
+            if (string.IsNullOrWhiteSpace(contractClientCd))
             {
-                tenantCode = Request.Headers["X-Tenant-Code"].ToString();
+                contractClientCd = Request.Headers["X-Contract-Client-Code"].ToString();
             }
 
             // ③ クエリパラメーターから取得を試みる（デバッグ用）
-            if (string.IsNullOrWhiteSpace(tenantCode))
+            if (string.IsNullOrWhiteSpace(contractClientCd))
             {
-                tenantCode = Request.Query["tenantCode"].ToString();
+                contractClientCd = Request.Query["contractClientCd"].ToString();
             }
 
             // ④ Cookie から取得を試みる（ログイン後の自動保存）
-            if (string.IsNullOrWhiteSpace(tenantCode))
+            if (string.IsNullOrWhiteSpace(contractClientCd))
             {
-                Request.Cookies.TryGetValue("tenantCode", out tenantCode);
+                Request.Cookies.TryGetValue("contractClientCd", out contractClientCd);
             }
             
-            if (string.IsNullOrWhiteSpace(tenantCode))
-                throw new Exception("tenantCode が JWT、ヘッダー(X-Tenant-Code)、クエリパラメータ(tenantCode)、または Cookie に含まれていません");
+            if (string.IsNullOrWhiteSpace(contractClientCd))
+                throw new Exception("contractClientCd が JWT、ヘッダー(X-Contract-Client-Code)、クエリパラメータ(contractClientCd)、または Cookie に含まれていません");
 
             // ⑤ masterDB から接続先情報を取得
-            var tenant = _masterDb.Tenants.FirstOrDefault(t => t.TenantCode == tenantCode);
-            if (tenant == null)
+            var contractClient = _masterDb.ContractClient.FirstOrDefault(t => t.ContractClientCd == contractClientCd);
+            if (contractClient == null)
                 throw new Exception("MasterDB にテナント情報がありません");
 
             // ⑥ テナントDB用の接続文字列
-            string connStr = $"Host=localhost;Port=5432;" + $"Database={tenant.TenantCode};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
+            string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
 
             // ⑦ 動的に DeviceDbContext を生成
             return _factory.Create(connStr);
@@ -88,7 +88,7 @@ namespace DeviceApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            using var db = GetTenantDb();
+            using var db = GetContractClientDb();
 
             var users = await db.AdminUsers
                 .OrderByDescending(u => u.Id)
@@ -107,7 +107,7 @@ namespace DeviceApi.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateAdminUserRequest request)
         {
-            using var db = GetTenantDb();
+            using var db = GetContractClientDb();
             if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return BadRequest("Username and password are required.");
@@ -142,7 +142,7 @@ namespace DeviceApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateAdminUserRequest request)
         {
-            using var db = GetTenantDb();
+            using var db = GetContractClientDb();
             var user = await db.AdminUsers.FindAsync(id);
             if (user == null)
             {
@@ -175,7 +175,7 @@ namespace DeviceApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            using var db = GetTenantDb();
+            using var db = GetContractClientDb();
             var user = await db.AdminUsers.FindAsync(id);
             if (user == null)
             {

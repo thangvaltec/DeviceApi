@@ -1,7 +1,7 @@
 using DeviceApi.Data;
 using Microsoft.EntityFrameworkCore;
 
-public class TenantDbContextFactory
+public class ContractClientDbContextFactory
 {
     public DeviceDbContext Create(string connectionString)
     {

@@ -1,4 +1,4 @@
-﻿// テナントごとのテーブル作成スクリプト
+﻿/* 契約ごとのテーブル作成スクリプト */
 
 CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
     "MigrationId" varchar(150) NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS devices (
     "SerialNo" TEXT NOT NULL,
     "DeviceName" TEXT NOT NULL,
     "AuthMode" INTEGER NOT NULL,
-    "IsActive" INTEGER NOT NULL,
-    "DelFlg" INTEGER NOT NULL,
+    "IsActive" BOOLEAN NOT NULL,
+    "DelFlg" BOOLEAN NOT NULL,
     "CreatedAt" TIMESTAMP NOT NULL,
     "UpdatedAt" TIMESTAMP NOT NULL
 );
@@ -58,13 +58,19 @@ ON CONFLICT ("MigrationId") DO NOTHING;
 
 COMMIT;
 
-// 共通テナント
+/* 共通テナント */
 
-CREATE TABLE  IF NOT EXISTS tenants (
-    Id SERIAL PRIMARY KEY,
-    TenantCode TEXT NOT NULL,
-    TenantName TEXT NOT NULL,
-    DelFlg BOOLEAN NOT NULL,
-    CreatedAt TIMESTAMP NOT NULL,
-    UpdatedAt TIMESTAMP NOT NULL
+CREATE TABLE  IF NOT EXISTS contract_client (
+    "Id" SERIAL PRIMARY KEY,
+    "ContractClientCd" TEXT NOT NULL,
+    "ContractClientName" TEXT NOT NULL,
+    "DelFlg" BOOLEAN NOT NULL,
+    "CreatedAt" TIMESTAMP NOT NULL,
+    "UpdatedAt" TIMESTAMP NOT NULL
 );
+
+INSERT INTO public.contract_client(
+	"ContractClientCd", "ContractClientName", "DelFlg", "CreatedAt", "UpdatedAt")
+	VALUES ('1234', 'テスト用１', false, current_timestamp, current_timestamp);
+
+COMMIT;

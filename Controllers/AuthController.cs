@@ -12,21 +12,21 @@ namespace DeviceApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly TenantDbContext _masterContext;
-        private readonly TenantDbContextFactory _tenantDbFactory;
+        private readonly ContractClientDbContext _masterContext;
+        private readonly ContractClientDbContextFactory _contractClientDbFactory;
 
         // DbContextをDIで受け取るコンストラクター
         public AuthController(
-            TenantDbContext masterContext,
-            TenantDbContextFactory tenantDbFactory)
+            ContractClientDbContext masterContext,
+            ContractClientDbContextFactory contractClientDbFactory)
         {
             _masterContext = masterContext;
-            _tenantDbFactory = tenantDbFactory;
+            _contractClientDbFactory = contractClientDbFactory;
         }
 
         public class LoginRequest
         {
-            public string TenantCode { get; set; } = string.Empty;
+            public string ContractClientCd { get; set; } = string.Empty;
             public string Username { get; set; } = string.Empty;
             public string Password { get; set; } = string.Empty;
         }
@@ -35,8 +35,8 @@ namespace DeviceApi.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
 
-            var tenant = _masterContext.Tenants.FirstOrDefault(u => u.TenantCode == request.TenantCode);
-            if (tenant == null)
+            var contractClient = _masterContext.ContractClient.FirstOrDefault(u => u.ContractClientCd == request.ContractClientCd);
+            if (contractClient == null)
             {
                 return new ContentResult
                 {
@@ -48,17 +48,17 @@ namespace DeviceApi.Controllers
             else
             {
                 // ① テナントDBの接続文字列
-                string connStr = $"Host=localhost;Port=5432;" + $"Database={tenant.TenantCode};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
+                string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
                 
                 // ² factory からテナントDB用 DeviceDbContext を生成
-                var tenantDb = _tenantDbFactory.Create(connStr);
+                var contractClientDbDb = _contractClientDbFactory.Create(connStr);
 
                 if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 {
                     return BadRequest("ユーザー名とパスワードを入力してください。");
                 }
                 
-                var user = await tenantDb.AdminUsers.FirstOrDefaultAsync(u => u.Username == request.Username);
+                var user = await contractClientDbDb.AdminUsers.FirstOrDefaultAsync(u => u.Username == request.Username);
                 if (user == null)
                 {
                     return Unauthorized("ユーザー名またはパスワードが違います。");
@@ -70,8 +70,8 @@ namespace DeviceApi.Controllers
                     return Unauthorized("ユーザー名またはパスワードが違います。");
                 }
                 
-                // tenantCode を Cookie に保存
-                Response.Cookies.Append("tenantCode", tenant.TenantCode, new Microsoft.AspNetCore.Http.CookieOptions
+                // contractClientCd を Cookie に保存
+                Response.Cookies.Append("contractClientCd", contractClient.ContractClientCd, new Microsoft.AspNetCore.Http.CookieOptions
                 {
                     HttpOnly = false,  // JavaScriptからアクセス可能
                     SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
@@ -80,7 +80,7 @@ namespace DeviceApi.Controllers
                 
                 return Ok(new
                 {
-                    tenantCode = tenant.TenantCode,
+                    contractClientCd = contractClient.ContractClientCd,
                     username = user.Username,
                     role = user.Role
                 });
