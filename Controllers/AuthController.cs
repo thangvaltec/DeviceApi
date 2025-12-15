@@ -48,7 +48,9 @@ namespace DeviceApi.Controllers
             else
             {
                 // ① テナントDBの接続文字列
-                string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
+                string connStr = $"Host=localhost;Port=5432;" +
+                                 $"Database={contractClient.ContractClientCd};" +
+                                 $"Username=postgres;Password=2234;SslMode=Disable;";
                 
                 // ² factory からテナントDB用 DeviceDbContext を生成
                 var contractClientDbDb = _contractClientDbFactory.Create(connStr);

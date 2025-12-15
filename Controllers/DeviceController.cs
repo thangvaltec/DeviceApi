@@ -63,7 +63,9 @@ namespace DeviceApi.Controllers
                 throw new Exception($"MasterDB にテナント情報がありません (取得しようとした contractClientCd: '{contractClientCd}')");
 
             // ⑥ テナントDB用の接続文字列
-            string connStr = $"Host=localhost;Port=5432;" + $"Database={contractClient.ContractClientCd};" + $"Username=postgres;Password=Valtec;SslMode=Disable;";
+            string connStr = $"Host=localhost;Port=5432;" +
+                             $"Database={contractClient.ContractClientCd};" +
+                             $"Username=postgres;Password=2234;SslMode=Disable;";
 
             // ⑦ 動的に DeviceDbContext を生成
             return _factory.Create(connStr);
@@ -284,7 +286,7 @@ namespace DeviceApi.Controllers
             db.DeviceLogs.Add(new DeviceLog
             {
                 SerialNo = device.SerialNo,
-                Action = "デバイスを削除（ソフト削除）",
+                Action = "デバイスを削除",
                 CreatedAt = DateTime.UtcNow
             });
             db.SaveChanges();
@@ -293,7 +295,7 @@ namespace DeviceApi.Controllers
             {
                 StatusCode = StatusCodes.Status200OK,
                 ContentType = "text/plain; charset=utf-8",
-                Content = "デバイスを削除しました（ソフト削除）。"
+                Content = "デバイスを削除しました。"
             };
         }
 
@@ -316,7 +318,7 @@ namespace DeviceApi.Controllers
             {
                 0 => "顔認証",
                 1 => "静脈認証",
-                2 => "顔＋静脈（二要素）",
+                2 => "顔＋静脈認証",
                 _ => $"不明 ({authMode})"
             };
         }
