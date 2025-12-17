@@ -13,6 +13,7 @@ namespace DeviceApi.Data
 
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceLog> DeviceLogs { get; set; }
+        public DbSet<AuthLog> AuthLogs { get; set; }
         public DbSet<AdminUser> AdminUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,6 +21,7 @@ namespace DeviceApi.Data
             modelBuilder.Entity<Device>().ToTable("devices");
             modelBuilder.Entity<DeviceLog>().ToTable("device_logs");
             modelBuilder.Entity<AdminUser>().ToTable("admin_users");
+            modelBuilder.Entity<AuthLog>().ToTable("auth_logs");
 
             modelBuilder.Entity<AdminUser>().HasData(new AdminUser
             {

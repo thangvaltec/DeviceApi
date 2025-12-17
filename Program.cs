@@ -9,17 +9,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // フロントエンド（Vite開発サーバー）向けのCORS設定
+// フロントエンド（Vite開発サーバー）向けのCORS設定
+// 開発中は全オリジンを許可するため、allowedOriginsは一時的に無効化
+/*
 var allowedOrigins = new[]
 {
     "http://localhost:5173",
     "http://10.200.2.29:5173"
 };
+*/
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendCors", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

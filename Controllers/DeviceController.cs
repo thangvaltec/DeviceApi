@@ -31,6 +31,8 @@ namespace DeviceApi.Controllers
         }
 
         // ★ JWTのcontractClientCdからテナントDBを取得するメソッド
+        //tenant fallback DEFAULT_TENANT_CD
+        private const string DEFAULT_TENANT_CD = "9999";
         private DeviceDbContext GetContractClientDb()
         {
             // ① リクエストヘッダーまたはJWTから contractClientCd を取得
@@ -54,8 +56,16 @@ namespace DeviceApi.Controllers
                 Request.Cookies.TryGetValue("contractClientCd", out contractClientCd);
             }
             
+            //if (string.IsNullOrWhiteSpace(contractClientCd))
+            //    throw new Exception("contractClientCd が JWT、ヘッダー(X-Contract-Client-Code)、クエリパラメータ(contractClientCd)、または Cookie に含まれていません");
+            // ★ BodyCamera fallback: tenant デフォルト
             if (string.IsNullOrWhiteSpace(contractClientCd))
-                throw new Exception("contractClientCd が JWT、ヘッダー(X-Contract-Client-Code)、クエリパラメータ(contractClientCd)、または Cookie に含まれていません");
+            {
+                contractClientCd = DEFAULT_TENANT_CD;
+            }
+            //add log
+            Console.WriteLine($"[TenantResolver] contractClientCd = {contractClientCd}");
+
 
             // ⑤ masterDB から接続先情報を取得
             var contractClient = _masterDb.ContractClient.FirstOrDefault(t => t.ContractClientCd == contractClientCd);

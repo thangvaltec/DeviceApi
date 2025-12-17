@@ -1,4 +1,4 @@
-﻿/* 契約ごとのテーブル作成スクリプト */
+/* 契約ごとのテーブル作成スクリプト */
 
 CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
     "MigrationId" varchar(150) NOT NULL,
@@ -32,6 +32,20 @@ CREATE TABLE IF NOT EXISTS devices (
     "DelFlg" BOOLEAN NOT NULL,
     "CreatedAt" TIMESTAMP NOT NULL,
     "UpdatedAt" TIMESTAMP NOT NULL
+);
+
+-- ============================================================================
+-- Table for Authentication History (AuthHistory Screen)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS auth_logs (
+    "Id" SERIAL PRIMARY KEY,
+    "SerialNo" TEXT NOT NULL,       -- Matches devices."SerialNo"
+    "UserId" TEXT NOT NULL,         -- ID of the person attempting auth
+    "UserName" TEXT,                -- Name of the person (Optional, from Face Face)
+    "AuthMode" INTEGER NOT NULL,    -- 0:Face, 1:Vein, 2:Dual
+    "IsSuccess" BOOLEAN NOT NULL,
+    "ErrorMessage" TEXT,            -- Reason for failure
+    "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP -- Matches device_logs."CreatedAt"
 );
 
 -- 明示的に ID = 1 を登録（PostgreSQLでは IDENTITY_INSERT 不要）
