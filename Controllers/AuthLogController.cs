@@ -81,10 +81,14 @@ namespace DeviceApi.Controllers
 
                 if (!string.IsNullOrWhiteSpace(date) && DateTime.TryParse(date, out var targetDate))
                 {
-                    var startOfDay = DateTime.SpecifyKind(targetDate.Date, DateTimeKind.Utc);
-                    var endOfDay = startOfDay.AddDays(1);
+                    // Parse date as local time (JST), then convert to UTC for PostgreSQL
+                    var startOfDayLocal = DateTime.SpecifyKind(targetDate.Date, DateTimeKind.Local);
+                    var endOfDayLocal = startOfDayLocal.AddDays(1);
                     
-                    // UTC or Local depending on DB storage. Assuming DB stores what it gets (UTC usually).
+                    var startOfDay = startOfDayLocal.ToUniversalTime();
+                    var endOfDay = endOfDayLocal.ToUniversalTime();
+                    
+                    // Query using UTC timestamps
                     query = query.Where(x => x.CreatedAt >= startOfDay && x.CreatedAt < endOfDay);
                 }
                 else

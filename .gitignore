@@ -35,3 +35,7 @@ project.nuget.cache
 
 # Others
 *.pdb
+activity/
+DeviceManagerFrontend/
+publish/
+appsettings.Development.json/

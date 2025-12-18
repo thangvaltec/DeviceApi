@@ -71,7 +71,7 @@ class VeinResultActivity : AppCompatActivity() {
         val veinResult = intent.getStringExtra(EXTRA_VEIN_RESULT)
         val veinId = intent.getStringExtra(EXTRA_VEIN_ID)
 
-        // Flow1: nhận thêm RESULTNAME + RESULTID từ camera app
+        // フロー1: カメラアプリからRESULTNAME + RESULTIDを受信
         faceName = intent.getStringExtra("ResultName")
         faceId = intent.getStringExtra("ResultID")
 
@@ -102,7 +102,7 @@ class VeinResultActivity : AppCompatActivity() {
             )
         )
 
-        // Flow1: Hiển thị 氏名 + ID (một dòng "ID: 12345")
+        // フロー1: 氏名 + ID を表示 (一行で "ID: 12345")
         if (currentAuthMode == "Face" && !faceName.isNullOrEmpty()) {
             tvNameLabel.visibility = View.VISIBLE
             tvName.visibility = View.VISIBLE
@@ -118,11 +118,11 @@ class VeinResultActivity : AppCompatActivity() {
             // ログ送信 (Face Only)
             uploadAuthLog(isSuccess = true, veinId = null, veinResultStr = null)
 
-            showButtons(isSuccess = true)     // Flow1 luôn nút 終了
+            showButtons(isSuccess = true)     // フロー1は常に終了ボタン
             return
         }
 
-        // Flow2 & Flow3: chỉ hiển thị ID nếu có, không dùng name
+        // フロー2 & フロー3: IDのみ表示、名前は使用しない
         if (isSuccess && !veinId.isNullOrEmpty()) {
             tvIdLine.text = "ID: $veinId"
             tvIdLine.visibility = View.VISIBLE
@@ -165,7 +165,7 @@ class VeinResultActivity : AppCompatActivity() {
 
             when (currentAuthMode) {
 
-                // Flow1: retry → chạy lại Face (quy về FaceAndVein để Top xử lý được)
+                // フロー1: リトライ → 顔認証を再実行 (FaceAndVeinに戻してTopで処理)
                 "Face" -> {
                     val intent = Intent(this, TopActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -175,7 +175,7 @@ class VeinResultActivity : AppCompatActivity() {
                     finish()
                 }
 
-                // Flow2 → Vein retry
+                // フロー2 → 静脈認証リトライ
                 "Vein" -> {
                     val intent = Intent(this, TopActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -185,7 +185,7 @@ class VeinResultActivity : AppCompatActivity() {
                     finish()
                 }
 
-                // Flow3 → Face+Vein retry
+                // フロー3 → 顔+静脈認証リトライ
                 "FaceAndVein" -> {
                     val intent = Intent(this, TopActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
