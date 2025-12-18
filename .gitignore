@@ -35,12 +35,11 @@ project.nuget.cache
 
 # Others
 *.pdb
-<<<<<<< HEAD
 *.dll
 *.exe
-=======
-activity/
-DeviceManagerFrontend/
+
+# Folders
 publish/
-appsettings.Development.json/
->>>>>>> authhistory
+DeviceManagerFrontend/
+appsettings.Development.json
+activity/
