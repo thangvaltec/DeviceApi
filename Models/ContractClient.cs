@@ -3,22 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DeviceApi.Models
 {
-    [Table("devices")]
-    public class Device
+    [Table("contract_client")]
+    public class ContractClient
     {
         [Key]
         public int Id { get; set; }     // PK
 
         [Required]
-        public string SerialNo { get; set; } = string.Empty;
+        public string ContractClientCd { get; set; } = string.Empty;
 
-        [Required]
-        public string DeviceName { get; set; } = string.Empty;
-
-        // 0 = Face, 1 = Vein, 2 = FaceAndVein
-        public int AuthMode { get; set; } = 0;
-
-        public bool IsActive { get; set; } = true;
+        public string ContractClientName { get; set; } = string.Empty;
 
         // Soft delete flag: false = active, true = deleted (hidden)
         public bool DelFlg { get; set; } = false;
