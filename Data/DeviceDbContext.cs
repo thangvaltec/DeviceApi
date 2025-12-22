@@ -14,12 +14,14 @@ namespace DeviceApi.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceLog> DeviceLogs { get; set; }
         public DbSet<AdminUser> AdminUsers { get; set; }
+        public DbSet<VeinDatum> VeinData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Device>().ToTable("devices");
             modelBuilder.Entity<DeviceLog>().ToTable("device_logs");
             modelBuilder.Entity<AdminUser>().ToTable("admin_users");
+            modelBuilder.Entity<VeinDatum>().ToTable("vain_datum");
 
             modelBuilder.Entity<AdminUser>().HasData(new AdminUser
             {
