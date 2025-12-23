@@ -85,6 +85,6 @@ CREATE TABLE  IF NOT EXISTS contract_client (
 
 INSERT INTO public.contract_client(
 	"ContractClientCd", "ContractClientName", "DelFlg", "CreatedAt", "UpdatedAt")
-	VALUES ('1234', 'テスト用１', false, current_timestamp, current_timestamp);
+	VALUES ('9999', 'テスト用１', false, current_timestamp, current_timestamp);
 
 COMMIT;
