@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DeviceApi.Data;
 using DeviceApi.Models;
+using DeviceApi.Services; // 追加
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,57 +14,19 @@ namespace DeviceApi.Controllers
     [ApiController]
     public class AuthLogController : ControllerBase
     {
-        private readonly ContractClientDbContext _masterDb;
-        private readonly ContractClientDbContextFactory _factory;
+        private readonly ITenantResolver _resolver; // 変更
 
-        public AuthLogController(
-            ContractClientDbContext masterDb,
-            ContractClientDbContextFactory factory)
+        public AuthLogController(ITenantResolver resolver) // 変更
         {
-            _masterDb = masterDb;
-            _factory = factory;
+            _resolver = resolver;
         }
 
-        private DeviceDbContext GetContractClientDb()
-        {
-            var contractClientCd = User.FindFirst("contractClientCd")?.Value;
-            
-            if (string.IsNullOrWhiteSpace(contractClientCd))
-            {
-                contractClientCd = Request.Headers["X-Contract-Client-Code"].ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(contractClientCd))
-            {
-                contractClientCd = Request.Query["contractClientCd"].ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(contractClientCd))
-            {
-                Request.Cookies.TryGetValue("contractClientCd", out contractClientCd);
-            }
-            
-            if (string.IsNullOrWhiteSpace(contractClientCd))
-            {
-                contractClientCd = "9999"; 
-            }
-
-            var contractClient = _masterDb.ContractClient.FirstOrDefault(t => t.ContractClientCd == contractClientCd);
-            if (contractClient == null)
-                throw new Exception($"MasterDB にテナント情報がありません (contractClientCd: '{contractClientCd}')");
-
-            string connStr = $"Host=localhost;Port=5432;" +
-                             $"Database={contractClient.ContractClientCd};" +
-                             $"Username=postgres;Password=2234;SslMode=Disable;";
-
-            return _factory.Create(connStr);
-        }
 
         public class CreateAuthLogRequest
         {
             public string SerialNo { get; set; } = string.Empty;
             public string UserId { get; set; } = string.Empty;
-            public string? UserName { get; set; } // Optional
+            public string? UserName { get; set; } // オプション
             public int AuthMode { get; set; }
             public bool IsSuccess { get; set; }
             public string? ErrorMessage { get; set; }
@@ -75,20 +38,16 @@ namespace DeviceApi.Controllers
         {
             try
             {
-                using var db = GetContractClientDb();
+                using var db = _resolver.Resolve(); // 管理画面アクセス
 
                 var query = db.AuthLogs.AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(date) && DateTime.TryParse(date, out var targetDate))
                 {
-                    // Parse date as local time (JST), then convert to UTC for PostgreSQL
-                    var startOfDayLocal = DateTime.SpecifyKind(targetDate.Date, DateTimeKind.Local);
-                    var endOfDayLocal = startOfDayLocal.AddDays(1);
+                    var startOfDay = targetDate.Date;
+                    var endOfDay = startOfDay.AddDays(1);
                     
-                    var startOfDay = startOfDayLocal.ToUniversalTime();
-                    var endOfDay = endOfDayLocal.ToUniversalTime();
-                    
-                    // Query using UTC timestamps
+                    // DBの保存形式に応じてUTCまたはローカル。通常はUTCを想定。
                     query = query.Where(x => x.CreatedAt >= startOfDay && x.CreatedAt < endOfDay);
                 }
                 else
@@ -111,19 +70,20 @@ namespace DeviceApi.Controllers
         [HttpPost]
         public IActionResult CreateAuthLog([FromBody] CreateAuthLogRequest req)
         {
-            using var db = GetContractClientDb();
+            if (req == null) return BadRequest("リクエストボディが空です。");
 
-            if (req == null) return BadRequest("Request body is empty.");
+            // デバイスの SerialNo に基づいてテナントを解決
+            using var db = _resolver.Resolve(req.SerialNo);
             
             var log = new AuthLog
             {
                 SerialNo = req.SerialNo,
                 UserId = req.UserId,
-                UserName = req.UserName,  // Save the name
+                UserName = req.UserName,  // ユーザー名を保存
                 AuthMode = req.AuthMode,
                 IsSuccess = req.IsSuccess,
                 ErrorMessage = req.ErrorMessage,
-                CreatedAt = req.Timestamp ?? DateTime.UtcNow // Auto-timestamp if missing
+                CreatedAt = req.Timestamp ?? DateTime.UtcNow // 指定がない場合は現在のUTC日時
             };
 
             db.AuthLogs.Add(log);

@@ -41,5 +41,6 @@ project.nuget.cache
 # Folders
 publish/
 DeviceManagerFrontend/
-appsettings.Development.json
 activity/
+DeviceApi.code-workspace/
+PalmSecure_GUI_Sample_1128/

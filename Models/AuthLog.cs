@@ -17,7 +17,7 @@ namespace DeviceApi.Models
 
         public string? UserName { get; set; }
 
-        // 0:Face, 1:Vein, 2:Dual
+        // 0: 顔認証, 1: 静脈認証, 2: 顔＋静脈認証
         [Required]
         public int AuthMode { get; set; }
 

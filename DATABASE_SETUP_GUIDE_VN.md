@@ -1,8 +1,11 @@
--- ==========================================
--- 1. マスター管理用テーブル (Master Management)
--- ==========================================
+# HƯỚNG DẪN THIẾT LẬP DATABASE (PHỤC HỒI PASCALCASE)
 
--- 契約顧客テーブル
+Tôi đã khôi phục lại định dạng **PascalCase** (chữ Hoa đầu từ) cho toàn bộ hệ thống để khớp với lịch sử dự án của bạn, ngoại trừ bảng `admin_users`.
+
+---
+
+## 1. Cho Master DB: `DBmanager`
+```sql
 CREATE TABLE IF NOT EXISTS contract_client (
     "Id" SERIAL PRIMARY KEY,
     "ContractClientCd" VARCHAR(50) UNIQUE NOT NULL,
@@ -12,7 +15,6 @@ CREATE TABLE IF NOT EXISTS contract_client (
     "UpdatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- マスタールーティングテーブル
 CREATE TABLE IF NOT EXISTS device_routing (
     "SerialNo" VARCHAR(100) PRIMARY KEY,
     "ContractClientCd" VARCHAR(50) NOT NULL,
@@ -20,11 +22,21 @@ CREATE TABLE IF NOT EXISTS device_routing (
     "UpdatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ==========================================
--- 2. 各テナント共通テーブル (Tenant Tables)
--- ==========================================
+INSERT INTO contract_client ("ContractClientCd", "ContractClientName")
+VALUES ('777', 'Khách hàng 777'),
+       ('MasterDb', 'Hồ chứa thiết bị mới')
+ON CONFLICT ("ContractClientCd") DO NOTHING;
+```
 
--- デバイス一覧
+---
+
+## 2. Cho Tenant DB: `MasterDb` và `777`
+Bạn hãy chạy script này cho từng Tenant DB.
+
+**Chú ý**: Chỉ bảng `admin_users` dùng chữ thường. Các bảng khác dùng chữ Hoa trong ngoặc kép.
+
+```sql
+-- 1. Bảng devices
 CREATE TABLE IF NOT EXISTS devices (
     "Id" SERIAL PRIMARY KEY,
     "SerialNo" VARCHAR(100) UNIQUE NOT NULL,
@@ -36,7 +48,7 @@ CREATE TABLE IF NOT EXISTS devices (
     "UpdatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 認証ログ
+-- 2. Bảng auth_logs
 CREATE TABLE IF NOT EXISTS auth_logs (
     "Id" SERIAL PRIMARY KEY,
     "SerialNo" VARCHAR(100) NOT NULL,
@@ -48,7 +60,7 @@ CREATE TABLE IF NOT EXISTS auth_logs (
     "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ユーザー管理（※このテーブルのみ C# Model 側で小文字定義されています）
+-- 3. Bảng admin_users (CHỮ THƯỜNG - KHÔNG NGOẶC KÉP)
 CREATE TABLE IF NOT EXISTS admin_users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
@@ -57,7 +69,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- デバイス操作履歴
+-- 4. Bảng device_logs
 CREATE TABLE IF NOT EXISTS device_logs (
     "Id" SERIAL PRIMARY KEY,
     "SerialNo" VARCHAR(100) NOT NULL,
@@ -65,18 +77,8 @@ CREATE TABLE IF NOT EXISTS device_logs (
     "CreatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ==========================================
--- 3. 初期データ投入 (Initial Data)
--- ==========================================
-
--- テスト用テナント
-INSERT INTO contract_client ("ContractClientCd", "ContractClientName")
-VALUES ('777', 'テストテナント 777'),
-       ('MasterDb', 'メインDB（ディスカバリー）')
-ON CONFLICT ("ContractClientCd") DO NOTHING;
-
--- 初期adminユーザー (Mật khẩu: valtec)
--- ※各テナントDBで実行してください
+-- 5. Tạo user admin (Pass: valtec)
 INSERT INTO admin_users (username, password_hash, role)
 VALUES ('admin', '39f8485ae66793496c7f4e437acfa60d3905653ea01ca155cf1b5d05446f3702', 'super_admin')
 ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash;
+```

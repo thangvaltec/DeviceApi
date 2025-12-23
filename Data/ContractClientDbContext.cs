@@ -12,6 +12,7 @@ namespace DeviceApi.Data
         }
 
         public DbSet<ContractClient> ContractClient { get; set; }
+        public DbSet<DeviceRouting> DeviceRoutings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
