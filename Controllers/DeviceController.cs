@@ -7,13 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeviceApi.Controllers
 {
-    public class UpdateDeviceRequest
-    {
-        public string SerialNo { get; set; } = string.Empty;
-        public int AuthMode { get; set; }
-        public string DeviceName { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
-    }
 
     [Route("api/[controller]")]
     [ApiController]
@@ -138,6 +131,50 @@ namespace DeviceApi.Controllers
                 authMode = device.AuthMode,
                 deviceName = device.DeviceName,
                 isActive = device.IsActive
+            });
+        }
+
+        [HttpPost("insertVeinData")]
+        public IActionResult InsertVeinData([FromBody] VeinRequest req)
+        {
+
+            using var db = GetContractClientDb(); // テナントDB
+
+            if (req == null || string.IsNullOrWhiteSpace(req.Id))
+            {
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    ContentType = "text/plain; charset=utf-8",
+                    Content = "社員番号 は必須です。"
+                };
+            }
+
+            var veinData = db.VeinDatum.FirstOrDefault(x => x.EmployeeId == req.Id);
+
+            if (veinData == null)
+            {
+                byte[] veinBase64;
+                veinBase64 = Convert.FromBase64String(req.VeinDataBase64);
+
+                veinData = new VeinDatum
+                {
+                    EmployeeId = req.Id,
+                    SensorType = req.SensorType,
+                    DataType = req.DataType,
+                    VeinData = veinBase64
+                };
+
+                db.VeinDatum.Add(veinData);
+                db.SaveChanges();
+            }
+
+            return Ok(new
+            {
+                employeeId = veinData.EmployeeId,
+                sensorType = veinData.SensorType,
+                dataType = veinData.DataType,
+                veinData = veinData.VeinData
             });
         }
 
