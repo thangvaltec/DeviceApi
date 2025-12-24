@@ -48,6 +48,17 @@ CREATE TABLE IF NOT EXISTS auth_logs (
     "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP -- Matches device_logs."CreatedAt"
 );
 
+CREATE TABLE  IF NOT EXISTS vain_datum (
+    "recId" SERIAL PRIMARY KEY,
+    "sensorType" SMALLINT NOT NULL,
+    "dataType" SMALLINT NOT NULL,
+    "id" TEXT NOT NULL,
+    "veinData" BYTEA NOT NULL,
+    "DelFlg" BOOLEAN NOT NULL,
+    "CreatedAt" TIMESTAMP NOT NULL,
+    "UpdatedAt" TIMESTAMP NOT NULL
+);
+
 -- 明示的に ID = 1 を登録（PostgreSQLでは IDENTITY_INSERT 不要）
 INSERT INTO admin_users (
     id, created_at, password_hash, role, username
