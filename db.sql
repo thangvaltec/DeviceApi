@@ -52,7 +52,7 @@ CREATE TABLE  IF NOT EXISTS vain_datum (
     "recId" SERIAL PRIMARY KEY,
     "sensorType" SMALLINT NOT NULL,
     "dataType" SMALLINT NOT NULL,
-    "id" TEXT NOT NULL,
+    "Id" TEXT NOT NULL,
     "veinData" BYTEA NOT NULL,
     "DelFlg" BOOLEAN NOT NULL,
     "CreatedAt" TIMESTAMP NOT NULL,
